@@ -43,10 +43,7 @@ Route::get('simple/{table:name}', function (Request $request, TestTable $table) 
             );
         }
         elseif (in_array($columnType, ColumnTypes::CHARACTERS) || in_array($columnType, ColumnTypes::BLOBS)) {
-            if (random_int(0, 1))
-                $query->whereNull($columnName);
-            else
-                $query->whereNull($columnName);
+            // No Conditions
         }
         elseif ($columnType == ColumnTypes::BOOLEAN) {
             $query->where($columnName, boolval(random_int(0, 1)));
