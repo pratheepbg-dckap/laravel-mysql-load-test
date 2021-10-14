@@ -1,5 +1,6 @@
 <?php
 
+use App\Constants\ColumnTypes;
 use Illuminate\Support\Facades\Route;
 
 /*
