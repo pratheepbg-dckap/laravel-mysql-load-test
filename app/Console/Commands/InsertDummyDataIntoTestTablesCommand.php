@@ -52,7 +52,7 @@ class InsertDummyDataIntoTestTablesCommand extends Command
         $result = app(TestTableDummyDataService::class)->generateDataIntoTable($table, $rows);
         $end = microtime(true);
 
-        $this->line("Time Elapsed: ". (($end - $start) * 1000 * 1000) . 's');
+        $this->line("Time Elapsed: ". (($end - $start) / 1000 / 1000) . 's');
 
         if ($result) {
             $this->info("Table was successfully populated with the Dummy Data");
