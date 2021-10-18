@@ -14,7 +14,7 @@ class CreateDatabaseTestTableCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'table:create';
+    protected $signature = 'table:create {--silent : Do the Table creation without entering Table Schema into Tracking Table}';
 
     /**
      * The console command description.
@@ -70,18 +70,21 @@ class CreateDatabaseTestTableCommand extends Command
                 $table_name,
                 $columns,
                 $column_types ?: null,
-                $index
+                $index,
+                $this->option('silent')
             );
 
-            $this->info("Table \"{$table->name}\" was successfully created");
-            $this->table(
-                ["Column Type", "Number of Columns"],
-                $table->columns
-                    ->groupBy('column_type')
-                    ->map->count()
-                    ->map(fn($count, $type) => [ucwords($type), $count])
-                    ->toArray()
-            );
+            $this->info("Table \"{$table_name}\" was successfully created");
+
+            if (! $this->option('silent'))
+                $this->table(
+                    ["Column Type", "Number of Columns"],
+                    $table->columns
+                        ->groupBy('column_type')
+                        ->map->count()
+                        ->map(fn($count, $type) => [ucwords($type), $count])
+                        ->toArray()
+                );
 
         } catch (\Exception $e) {
             $this->error("Failed to create the Database Table");

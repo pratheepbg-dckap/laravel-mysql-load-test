@@ -18,21 +18,27 @@ class TestTablesCreatorService
      * @param int $columns
      * @param array|null $column_types
      * @param int $maximum_indexes
-     * @return TestTable
+     * @param bool $silent Doesn't enter the Table Schema into tracking tables
+     * @return TestTable|bool
      * @throws \Exception
      */
-    public function createTestTable(string $table_name, int $columns, ?array $column_types = null, $maximum_indexes = 0)
+    public function createTestTable(string $table_name, int $columns, ?array $column_types = null, int $maximum_indexes = 0, bool $silent = false)
     {
+        if (! $silent) {
         /** @var TestTable $testTable */
         $testTable = TestTable::query()
             ->create([
                 'name' => $table_name,
                 'columns_count' => $columns
             ]);
+        }
+        else {
+            $testTable = null;
+        }
         $column_types ??= ColumnTypes::ALL;
 
         try {
-            Schema::create($table_name, function (Blueprint $table) use ($columns, $column_types, $maximum_indexes, $testTable) {
+            Schema::create($table_name, function (Blueprint $table) use ($table_name, $columns, $column_types, $maximum_indexes, $testTable, $silent) {
                 $indexesAdded = 0;
                 $columnsCreated = collect([]);
 
@@ -62,18 +68,22 @@ class TestTablesCreatorService
                     ];
 
                     $columnsCreated->push($column_information);
-                    $testTable->columns()->create($column_information);
+                    if (! $silent)
+                        $testTable->columns()->create($column_information);
                 }
-                Log::info("Trying to create Table {$testTable->name}", $columnsCreated->groupBy('column_type')->map->count()->toArray());
+                Log::info("Trying to create Table {$table_name}", $silent ? [] : $columnsCreated->groupBy('column_type')->map->count()->toArray());
             });
-            Log::info("Successfully created Table {$testTable->name}");
+            Log::info("Successfully created Table {$table_name}");
         } catch (\Exception $exception) {
-            Log::warning("Failed to create Table {$testTable->name}");
-            $testTable->delete();
+            Log::warning("Failed to create Table {$table_name}");
+
+            if (! $silent)
+                $testTable->delete();
+
             throw $exception;
         }
 
-        return $testTable;
+        return $testTable ?? true;
     }
 
     /**
